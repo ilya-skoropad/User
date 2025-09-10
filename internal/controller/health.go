@@ -2,33 +2,51 @@ package controller
 
 import (
 	"encoding/json"
-	"log"
+	"ilya-skoropad/user/internal/repository"
 	"net/http"
 )
 
 type HealthResponse struct {
-	Status string
+	Message string
 }
 
 type HealthController struct {
-	logger *log.Logger
+	repo repository.HealthRepository
 }
 
 func (h *HealthController) Handle(w http.ResponseWriter, r *http.Request) {
-	response := &HealthResponse{
-		Status: "OK",
+	err := h.repo.Ping()
+	if err == nil {
+		h.writeSuccess(w)
+		return
 	}
 
-	data, err := json.Marshal(response)
-	if err != nil {
-		h.logger.Fatal(err.Error())
-	}
+	h.writeError(w, err)
+}
+
+func (h *HealthController) writeSuccess(w http.ResponseWriter) {
+	data, _ := json.Marshal(
+		HealthResponse{
+			Message: "ok",
+		},
+	)
 
 	w.Write(data)
 }
 
-func NewHealthController(logger *log.Logger) *HealthController {
+func (h *HealthController) writeError(w http.ResponseWriter, err error) {
+	data, _ := json.Marshal(
+		HealthResponse{
+			Message: err.Error(),
+		},
+	)
+
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write(data)
+}
+
+func NewHealthController(repo repository.HealthRepository) *HealthController {
 	return &HealthController{
-		logger: logger,
+		repo: repo,
 	}
 }
