@@ -7,6 +7,7 @@ import (
 	"ilya-skoropad/user/internal/controller"
 	"ilya-skoropad/user/internal/middleware"
 	"ilya-skoropad/user/internal/repository"
+	"ilya-skoropad/user/internal/service"
 	"log"
 	"net/http"
 )
@@ -21,14 +22,23 @@ func main() {
 
 	defer connection.Close()
 
+	logger := log.Default()
 	healthController := controller.NewHealthController(
 		repository.NewHealthRepository(connection),
 	)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthController.Handle)
+	registrationController := controller.NewRegistrationController(
+		service.NewUserService(
+			repository.NewUserRepository(connection),
+			logger,
+		),
+	)
 
-	wrappedMux := middleware.NewLoggerMiddleware(mux, log.Default())
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", healthController.Handle)
+	mux.HandleFunc("POST /api/register", registrationController.Handle)
+
+	wrappedMux := middleware.NewLoggerMiddleware(mux, logger)
 
 	err = http.ListenAndServe(fmt.Sprintf("%s:%s", conf.AppHost, conf.AppPort), wrappedMux)
 	if err != nil {
