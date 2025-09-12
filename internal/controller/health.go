@@ -10,11 +10,11 @@ type HealthResponse struct {
 	Message string
 }
 
-type HealthController struct {
+type healthController struct {
 	repo repository.HealthRepository
 }
 
-func (h *HealthController) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *healthController) Handle(w http.ResponseWriter, r *http.Request) {
 	err := h.repo.Ping()
 	if err == nil {
 		h.writeSuccess(w)
@@ -24,7 +24,7 @@ func (h *HealthController) Handle(w http.ResponseWriter, r *http.Request) {
 	h.writeError(w, err)
 }
 
-func (h *HealthController) writeSuccess(w http.ResponseWriter) {
+func (h *healthController) writeSuccess(w http.ResponseWriter) {
 	data, _ := json.Marshal(
 		HealthResponse{
 			Message: "ok",
@@ -34,7 +34,7 @@ func (h *HealthController) writeSuccess(w http.ResponseWriter) {
 	w.Write(data)
 }
 
-func (h *HealthController) writeError(w http.ResponseWriter, err error) {
+func (h *healthController) writeError(w http.ResponseWriter, err error) {
 	data, _ := json.Marshal(
 		HealthResponse{
 			Message: err.Error(),
@@ -45,8 +45,8 @@ func (h *HealthController) writeError(w http.ResponseWriter, err error) {
 	w.Write(data)
 }
 
-func NewHealthController(repo repository.HealthRepository) *HealthController {
-	return &HealthController{
+func NewHealthController(repo repository.HealthRepository) *healthController {
+	return &healthController{
 		repo: repo,
 	}
 }

@@ -38,7 +38,9 @@ func main() {
 	mux.HandleFunc("GET /health", healthController.Handle)
 	mux.HandleFunc("POST /api/register", registrationController.Handle)
 
-	wrappedMux := middleware.NewLoggerMiddleware(mux, logger)
+	wrappedMux := middleware.NewRecovery(
+		middleware.NewLoggerMiddleware(mux, logger),
+	)
 
 	err = http.ListenAndServe(fmt.Sprintf("%s:%s", conf.AppHost, conf.AppPort), wrappedMux)
 	if err != nil {

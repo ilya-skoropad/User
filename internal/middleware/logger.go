@@ -6,19 +6,19 @@ import (
 	"time"
 )
 
-type LoggerMiddleware struct {
+type loggerMiddleware struct {
 	nextHandler http.Handler
 	Logger      *log.Logger
 }
 
-func (l *LoggerMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (l *loggerMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	l.nextHandler.ServeHTTP(w, r)
 	log.Printf("%s %s %v", r.Method, r.URL.Path, time.Since(start))
 }
 
-func NewLoggerMiddleware(nextHandler http.Handler, logger *log.Logger) *LoggerMiddleware {
-	return &LoggerMiddleware{
+func NewLoggerMiddleware(nextHandler http.Handler, logger *log.Logger) http.Handler {
+	return &loggerMiddleware{
 		nextHandler: nextHandler,
 		Logger:      logger,
 	}
