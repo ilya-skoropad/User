@@ -14,8 +14,6 @@ import (
 func main() {
 	conf := config.Get()
 
-	mux := http.NewServeMux()
-
 	connection, err := sql.Open("postgres", conf.DbCon)
 	if err != nil {
 		panic(err)
@@ -27,6 +25,7 @@ func main() {
 		repository.NewHealthRepository(connection),
 	)
 
+	mux := http.NewServeMux()
 	mux.HandleFunc("/health", healthController.Handle)
 
 	wrappedMux := middleware.NewLoggerMiddleware(mux, log.Default())
