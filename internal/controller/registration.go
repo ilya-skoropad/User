@@ -24,7 +24,15 @@ func (h *registrationController) Handle(w http.ResponseWriter, r *http.Request) 
 		panic(err)
 	}
 
-	h.userService.Register(request)
+	result := h.userService.Register(request)
+	h.response(w, result)
+}
+
+func (h *registrationController) response(w http.ResponseWriter, resp dto.RegistrationResponse) {
+	data, _ := json.Marshal(resp)
+
+	w.WriteHeader(resp.Status)
+	w.Write(data)
 }
 
 func NewRegistrationController(userService service.UserService) *registrationController {
