@@ -30,6 +30,7 @@ func main() {
 	registrationController := controller.NewRegistrationController(
 		service.NewUserService(
 			repository.NewUserRepository(connection),
+			service.NewEmailSender(conf),
 			logger,
 		),
 	)

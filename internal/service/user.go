@@ -1,6 +1,7 @@
 package service
 
 import (
+	"crypto/rand"
 	"ilya-skoropad/user/internal/dto"
 	"ilya-skoropad/user/internal/entity"
 	"ilya-skoropad/user/internal/repository"
@@ -15,21 +16,17 @@ type UserService interface {
 }
 
 type userService struct {
-	repository repository.UserRepository
-	logger     *log.Logger
+	repository  repository.UserRepository
+	emailSender Email
+	logger      *log.Logger
 }
 
 func (s *userService) Register(request dto.RegistrationRequest) dto.RegistrationResponse {
-	err := s.repository.CheckExistsByLoginOrMail(request.Login, request.Email)
-	if err == nil {
+	if s.repository.Check(request.Login, request.Email) {
 		return dto.RegistrationResponse{
 			Status: http.StatusConflict,
 			Error:  "Login or password is takken",
 		}
-	}
-
-	if err.Error() != "sql: no rows in result set" {
-		panic(err)
 	}
 
 	pass, err := s.hashPassword(request.Password)
@@ -38,13 +35,14 @@ func (s *userService) Register(request dto.RegistrationRequest) dto.Registration
 	}
 
 	user := entity.User{
-		Login:    request.Login,
-		Nickname: request.Nickname,
-		Email:    request.Email,
-		Password: pass,
+		Login:         request.Login,
+		Nickname:      request.Nickname,
+		Email:         request.Email,
+		Password:      pass,
+		ActivationKey: rand.Text(),
 	}
 
-	err = s.repository.Save(user)
+	err = s.repository.Create(user)
 	if err != nil {
 		panic(err)
 	}
@@ -64,9 +62,14 @@ func (s *userService) checkPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-func NewUserService(repository repository.UserRepository, logger *log.Logger) UserService {
+func NewUserService(
+	repository repository.UserRepository,
+	emailSender Email,
+	logger *log.Logger,
+) UserService {
 	return &userService{
-		repository: repository,
-		logger:     logger,
+		repository:  repository,
+		emailSender: emailSender,
+		logger:      logger,
 	}
 }

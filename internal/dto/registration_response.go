@@ -11,5 +11,5 @@ type ValidationError struct {
 
 type RegistrationResponse struct {
 	Status int    `json:"-"`
-	Error  string `json:"errors"`
+	Error  string `json:"error"`
 }
