@@ -32,10 +32,10 @@ func (r userRepository) Check(login string, email string) bool {
 }
 
 func (r *userRepository) Create(user entity.User) error {
-	statment := `insert into app."user" ("state", "role", "nickname", "login", "email", "password", "activation_key")
+	statment := `insert into app."user" ("state_id", "role_id", "nickname", "login", "email", "password", "activation_key")
 		values (
-			(select id from app.state s where s."name" = 'Active'),
-			(select id from app.role s where s."name" = 'User'),
+			(select id from app.state s where s."name" = 'active'),
+			(select id from app.role s where s."name" = 'user'),
 			$1, $2, $3, $4, $5)`
 
 	_, err := r.connection.Exec(statment, user.Nickname, user.Login, user.Email, user.Password, user.ActivationKey)
